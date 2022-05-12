@@ -17,13 +17,14 @@
 package com.microsoft.hyperspace.index.sources
 
 import org.apache.hadoop.fs.FileStatus
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.expressions.{Attribute, AttributeReference}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.datasources.{FileIndex, HadoopFsRelation, LogicalRelation}
+import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.types.StructType
 
-import com.microsoft.hyperspace.index.{FileIdTracker, FileInfo, IndexConstants, IndexLogEntry, Relation}
+import com.microsoft.hyperspace.index._
 
 /**
  * ::Experimental::
@@ -119,6 +120,10 @@ trait FileBasedRelation extends SourceRelation {
       location: FileIndex,
       dataSchema: StructType,
       options: Map[String, String]): HadoopFsRelation
+
+  def createLogicalRelation(
+      hadoopFsRelation: BaseRelation,
+      newOutput: Seq[AttributeReference]): LogicalRelation
 
   /**
    * Creates [[LogicalRelation]] based on the current relation.

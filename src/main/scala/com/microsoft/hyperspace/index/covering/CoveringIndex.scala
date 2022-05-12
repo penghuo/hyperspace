@@ -20,6 +20,7 @@ import org.apache.spark.sql.{DataFrame, SaveMode}
 import org.apache.spark.sql.catalyst.catalog.BucketSpec
 import org.apache.spark.sql.functions.{col, input_file_name}
 import org.apache.spark.sql.types.StructType
+import org.elasticsearch.spark.sql.{sparkDatasetFunctions, SparkDataFrameFunctions}
 
 import com.microsoft.hyperspace.index._
 import com.microsoft.hyperspace.index.DataFrameWriterExtensions.Bucketizer
@@ -54,20 +55,7 @@ case class CoveringIndex(
   }
 
   override protected def write(ctx: IndexerContext, indexData: DataFrame, mode: SaveMode): Unit = {
-    // Run job
-    val repartitionedIndexData = {
-      // We are repartitioning with normalized columns (e.g., flattened nested column).
-      indexData.repartition(numBuckets, indexedColumns.map(name => col(s"`$name`")): _*)
-    }
-
-    // Save the index with the number of buckets specified.
-    repartitionedIndexData.write
-      .saveWithBuckets(
-        repartitionedIndexData,
-        ctx.indexDataPath.toString,
-        numBuckets,
-        indexedColumns,
-        mode)
+    indexData.saveToEs("hs_00001")
   }
 
   override def equals(o: Any): Boolean =

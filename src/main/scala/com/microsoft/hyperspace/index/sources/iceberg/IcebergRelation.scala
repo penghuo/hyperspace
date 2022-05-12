@@ -25,6 +25,7 @@ import org.apache.spark.sql.catalyst.expressions.{Attribute, AttributeReference}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.execution.datasources.parquet.ParquetFileFormat
+import org.apache.spark.sql.sources.BaseRelation
 import org.apache.spark.sql.types.StructType
 
 import com.microsoft.hyperspace.index.{Content, FileIdTracker, Hdfs, IndexConstants, Relation}
@@ -216,6 +217,12 @@ class IcebergRelation(
     val updatedOutput =
       newOutput.filter(attr => hadoopFsRelation.schema.fieldNames.contains(attr.name))
     new LogicalRelation(hadoopFsRelation, updatedOutput, None, false)
+  }
+
+  override def createLogicalRelation(
+      hadoopFsRelation: BaseRelation,
+      newOutput: Seq[AttributeReference]): LogicalRelation = {
+    throw new IllegalArgumentException("iceberg does not support createLogicalRelation")
   }
 
   private def newScan(): TableScan = {

@@ -89,6 +89,7 @@ lazy val commonSettings = Seq(
   name := "hyperspace-core",
   moduleName := name.value + s"-spark${sparkVersion.value.short}",
   libraryDependencies ++= deps(sparkVersion.value),
+  libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-20" % "7.12.1",
 
   // Scalastyle
   scalastyleConfig := (ThisBuild / scalastyleConfig).value,

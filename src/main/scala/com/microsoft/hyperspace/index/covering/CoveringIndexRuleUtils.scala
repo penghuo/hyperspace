@@ -25,6 +25,7 @@ import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.execution.datasources.parquet.ParquetFileFormat
 import org.apache.spark.sql.types.{LongType, StructType}
+import org.elasticsearch.spark.sql.DefaultSource15
 
 import com.microsoft.hyperspace.Hyperspace
 import com.microsoft.hyperspace.index._
@@ -110,17 +111,10 @@ object CoveringIndexRuleUtils {
     plan transformDown {
       case l: LeafNode if provider.isSupportedRelation(l) =>
         val relation = provider.getRelation(l)
-        val location = index.withCachedTag(IndexLogEntryTags.INMEMORYFILEINDEX_INDEX_ONLY) {
-          new InMemoryFileIndex(spark, index.content.files, Map(), None)
-        }
 
-        val indexFsRelation = new IndexHadoopFsRelation(
-          location,
-          new StructType(),
-          StructType(ci.schema.filter(relation.schema.contains(_))),
-          if (useBucketSpec) ci.bucketSpec else None,
-          new ParquetFileFormat,
-          Map(IndexConstants.INDEX_RELATION_IDENTIFIER))(spark, index)
+        val ds = new DefaultSource15()
+        val opt = Map("es.resource" -> "hs_00001")
+        val indexFsRelation = ds.createRelation(spark.sqlContext, opt)
 
         val updatedOutput = relation.output
           .filter(attr => indexFsRelation.schema.fieldNames.contains(attr.name))
