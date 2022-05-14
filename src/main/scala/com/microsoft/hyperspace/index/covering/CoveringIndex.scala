@@ -16,14 +16,15 @@
 
 package com.microsoft.hyperspace.index.covering
 
-import org.apache.spark.sql.{DataFrame, SaveMode}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.catalyst.catalog.BucketSpec
-import org.apache.spark.sql.functions.{col, input_file_name}
+import org.apache.spark.sql.functions.col
+import org.apache.spark.sql.functions.input_file_name
 import org.apache.spark.sql.types.StructType
-import org.elasticsearch.spark.sql.{sparkDatasetFunctions, SparkDataFrameFunctions}
+import org.elasticsearch.spark.sql.sparkDatasetFunctions
 
 import com.microsoft.hyperspace.index._
-import com.microsoft.hyperspace.index.DataFrameWriterExtensions.Bucketizer
 import com.microsoft.hyperspace.util.ResolverUtils
 import com.microsoft.hyperspace.util.ResolverUtils.ResolvedColumn
 
@@ -32,6 +33,7 @@ import com.microsoft.hyperspace.util.ResolverUtils.ResolvedColumn
  * for a shuffle node in a join query plan or a data scan node in a filter query plan.
  */
 case class CoveringIndex(
+    indexName: String,
     override val indexedColumns: Seq[String],
     override val includedColumns: Seq[String],
     override val schema: StructType,
@@ -54,8 +56,11 @@ case class CoveringIndex(
     copy(indexedColumns = indexedCols, includedColumns = includedCols, schema = schema)
   }
 
-  override protected def write(ctx: IndexerContext, indexData: DataFrame, mode: SaveMode): Unit = {
-    indexData.saveToEs("hs_00001")
+  override protected def write(
+      ctx: IndexerContext,
+      indexData: DataFrame,
+      mode: SaveMode): Unit = {
+    indexData.saveToEs(indexName)
   }
 
   override def equals(o: Any): Boolean =

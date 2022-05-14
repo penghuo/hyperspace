@@ -52,6 +52,7 @@ case class CoveringIndexConfig(
         includedColumns,
         IndexUtils.hasLineageColumn(properties))
     val index = CoveringIndex(
+      indexName,
       resolvedIndexedColumns.map(_.normalizedName),
       resolvedIncludedColumns.map(_.normalizedName),
       indexData.schema,

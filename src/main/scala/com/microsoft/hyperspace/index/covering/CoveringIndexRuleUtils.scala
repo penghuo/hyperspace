@@ -19,17 +19,21 @@ package com.microsoft.hyperspace.index.covering
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.catalog.BucketSpec
-import org.apache.spark.sql.catalyst.expressions.{Attribute, AttributeReference, In, Literal, Not}
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.sql.catalyst.expressions.AttributeReference
+import org.apache.spark.sql.catalyst.expressions.In
+import org.apache.spark.sql.catalyst.expressions.Literal
+import org.apache.spark.sql.catalyst.expressions.Not
 import org.apache.spark.sql.catalyst.optimizer.OptimizeIn
 import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.execution.datasources._
-import org.apache.spark.sql.execution.datasources.parquet.ParquetFileFormat
-import org.apache.spark.sql.types.{LongType, StructType}
+import org.apache.spark.sql.types.LongType
+import org.apache.spark.sql.types.StructType
 import org.elasticsearch.spark.sql.DefaultSource15
 
 import com.microsoft.hyperspace.Hyperspace
 import com.microsoft.hyperspace.index._
-import com.microsoft.hyperspace.index.plans.logical.{BucketUnion, IndexHadoopFsRelation}
+import com.microsoft.hyperspace.index.plans.logical.BucketUnion
 import com.microsoft.hyperspace.index.rules.RuleUtils
 import com.microsoft.hyperspace.util.HyperspaceConf
 
@@ -113,7 +117,7 @@ object CoveringIndexRuleUtils {
         val relation = provider.getRelation(l)
 
         val ds = new DefaultSource15()
-        val opt = Map("es.resource" -> "hs_00001")
+        val opt = Map("es.resource" -> index.name)
         val indexFsRelation = ds.createRelation(spark.sqlContext, opt)
 
         val updatedOutput = relation.output
@@ -183,26 +187,8 @@ object CoveringIndexRuleUtils {
           }
 
         val filesToRead = {
-          if (useBucketSpec || !index.hasParquetAsSourceFormat || filesDeleted.nonEmpty ||
-            relation.partitionSchema.nonEmpty) {
-            // Since the index data is in "parquet" format, we cannot read source files
-            // in formats other than "parquet" using one FileScan node as the operator requires
-            // files in one homogenous format. To address this, we need to read the appended
-            // source files using another FileScan node injected into the plan and subsequently
-            // merge the data into the index data. Please refer below [[Union]] operation.
-            // In case there are both deleted and appended files, we cannot handle the appended
-            // files along with deleted files as source files do not have the lineage column which
-            // is required for excluding the index data from deleted files.
-            // If the source relation is partitioned, we cannot read the appended files with the
-            // index data as the schema of partitioned files are not equivalent to the index data.
-            unhandledAppendedFiles = filesAppended
-            index.content.files
-          } else {
-            // If BucketSpec of index data isn't used (e.g., in the case of FilterIndex currently)
-            // and the source format is parquet, we could read the appended files along
-            // with the index data.
-            index.content.files ++ filesAppended
-          }
+          unhandledAppendedFiles = filesAppended
+          index.content.files
         }
 
         // In order to handle deleted files, read index data with the lineage column so that
@@ -223,13 +209,9 @@ object CoveringIndexRuleUtils {
           index.withCachedTag(plan, IndexLogEntryTags.INMEMORYFILEINDEX_HYBRID_SCAN)(fileIndex)
         }
 
-        val indexFsRelation = new IndexHadoopFsRelation(
-          newLocation,
-          new StructType(),
-          newSchema,
-          if (useBucketSpec) ci.bucketSpec else None,
-          new ParquetFileFormat,
-          Map(IndexConstants.INDEX_RELATION_IDENTIFIER))(spark, index)
+        val ds = new DefaultSource15()
+        val opt = Map("es.resource" -> index.name)
+        val indexFsRelation = ds.createRelation(spark.sqlContext, opt)
 
         val updatedOutput = relation.output
           .filter(attr => indexFsRelation.schema.fieldNames.contains(attr.name))
