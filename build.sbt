@@ -85,19 +85,16 @@ lazy val commonSettings = Seq(
     sparkVersion,
     "sparkShortVersion" -> sparkVersion.value.short),
   buildInfoPackage := "com.microsoft.hyperspace",
-
   name := "hyperspace-core",
   moduleName := name.value + s"-spark${sparkVersion.value.short}",
   libraryDependencies ++= deps(sparkVersion.value),
-  libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-20" % "7.12.1",
-
+  libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-30" % "7.12.1",
   // Scalastyle
   scalastyleConfig := (ThisBuild / scalastyleConfig).value,
   compileScalastyle := (Compile / scalastyle).toTask("").value,
   Compile / compile := ((Compile / compile) dependsOn compileScalastyle).value,
   testScalastyle := (Test / scalastyle).toTask("").value,
   Test / test := ((Test / test) dependsOn testScalastyle).value,
-
   // Package Python files
   (Compile / packageBin / mappings) := (Compile / packageBin / mappings).value ++ listPythonFiles.value,
   listPythonFiles := {
