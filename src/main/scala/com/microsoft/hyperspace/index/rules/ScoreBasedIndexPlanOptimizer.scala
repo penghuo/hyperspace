@@ -29,8 +29,10 @@ import com.microsoft.hyperspace.index.zordercovering.ZOrderFilterIndexRule
  * Apply Hyperspace indexes based on the score of each index application.
  */
 class ScoreBasedIndexPlanOptimizer {
-  private val rules: Seq[HyperspaceRule] =
-    Seq(FilterIndexRule, JoinIndexRule, ApplyDataSkippingIndex, ZOrderFilterIndexRule, NoOpRule)
+  private val rules: Seq[HyperspaceRule] = {
+    // Todo, remove not used rules
+    Seq(FilterIndexRule, NoOpRule)
+  }
 
   // Map for memoization. The key is the logical plan before applying [[HyperspaceRule]]s
   // and its value is a pair of best transformed plan and its score.

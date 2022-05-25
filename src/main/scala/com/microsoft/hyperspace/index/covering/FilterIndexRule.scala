@@ -17,13 +17,16 @@
 package com.microsoft.hyperspace.index.covering
 
 import org.apache.spark.sql.catalyst.expressions.Expression
-import org.apache.spark.sql.catalyst.plans.logical.{Filter, LogicalPlan, Project}
+import org.apache.spark.sql.catalyst.plans.logical.Filter
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.catalyst.plans.logical.Project
 
-import com.microsoft.hyperspace.index.IndexLogEntryTags
 import com.microsoft.hyperspace.index.plananalysis.FilterReasons
 import com.microsoft.hyperspace.index.rules._
-import com.microsoft.hyperspace.index.rules.ApplyHyperspace.{PlanToIndexesMap, PlanToSelectedIndexMap}
-import com.microsoft.hyperspace.util.{HyperspaceConf, ResolverUtils}
+import com.microsoft.hyperspace.index.rules.ApplyHyperspace.PlanToIndexesMap
+import com.microsoft.hyperspace.index.rules.ApplyHyperspace.PlanToSelectedIndexMap
+import com.microsoft.hyperspace.util.HyperspaceConf
+import com.microsoft.hyperspace.util.ResolverUtils
 
 /**
  * FilterPlanNodeFilter filters indexes out if
@@ -155,20 +158,23 @@ object FilterIndexRule extends HyperspaceRule {
 
     val candidateIndex = indexes.head._2
     val relation = RuleUtils.getRelation(spark, plan).get
-    val commonBytes = candidateIndex
-      .getTagValue(relation.plan, IndexLogEntryTags.COMMON_SOURCE_SIZE_IN_BYTES)
-      .getOrElse {
-        relation.allFileInfos.foldLeft(0L) { (res, f) =>
-          if (candidateIndex.sourceFileInfoSet.contains(f)) {
-            res + f.size // count, total bytes
-          } else {
-            res
-          }
-        }
-      }
 
-    // TODO: Enhance scoring function.
-    //  See https://github.com/microsoft/hyperspace/issues/444
-    (50 * (commonBytes.toFloat / relation.allFileSizeInBytes)).round
+    // TODO: reduce plan time, ignore scan raw data, simply return 50 as score.
+    50
+//    val commonBytes = candidateIndex
+//      .getTagValue(relation.plan, IndexLogEntryTags.COMMON_SOURCE_SIZE_IN_BYTES)
+//      .getOrElse {
+//        relation.allFileInfos.foldLeft(0L) { (res, f) =>
+//          if (candidateIndex.sourceFileInfoSet.contains(f)) {
+//            res + f.size // count, total bytes
+//          } else {
+//            res
+//          }
+//        }
+//      }
+//
+//    // TODO: Enhance scoring function.
+//    //  See https://github.com/microsoft/hyperspace/issues/444
+//    (50 * (commonBytes.toFloat / relation.allFileSizeInBytes)).round
   }
 }

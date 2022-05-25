@@ -43,6 +43,7 @@ lazy val spark2_4 = (project in file("spark2.4"))
     commonSettings,
     sparkVersion := Version(2, 4, 2),
     crossScalaVersions := List(scala212, scala211),
+    libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-20" % "7.12.1",
     inConfig(Compile)(addSparkVersionSpecificSourceDirectories),
     inConfig(Test)(addSparkVersionSpecificSourceDirectories))
 
@@ -52,6 +53,7 @@ lazy val spark3_0 = (project in file("spark3.0"))
     commonSettings,
     sparkVersion := Version(3, 0, 1),
     crossScalaVersions := List(scala212), // Spark 3 doesn't support Scala 2.11
+    libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-30" % "7.12.1",
     inConfig(Compile)(addSparkVersionSpecificSourceDirectories),
     inConfig(Test)(addSparkVersionSpecificSourceDirectories))
 
@@ -61,6 +63,7 @@ lazy val spark3_1 = (project in file("spark3.1"))
     commonSettings,
     sparkVersion := Version(3, 1, 1),
     crossScalaVersions := List(scala212), // Spark 3 doesn't support Scala 2.11
+    libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-30" % "7.12.1",
     inConfig(Compile)(addSparkVersionSpecificSourceDirectories),
     inConfig(Test)(addSparkVersionSpecificSourceDirectories))
 
@@ -88,7 +91,6 @@ lazy val commonSettings = Seq(
   name := "hyperspace-core",
   moduleName := name.value + s"-spark${sparkVersion.value.short}",
   libraryDependencies ++= deps(sparkVersion.value),
-  libraryDependencies += "org.elasticsearch" %% "elasticsearch-spark-30" % "7.12.1",
   // Scalastyle
   scalastyleConfig := (ThisBuild / scalastyleConfig).value,
   compileScalastyle := (Compile / scalastyle).toTask("").value,
