@@ -114,11 +114,20 @@ object CoveringIndexRuleUtils {
     //        Project(A,B) -> Filter(C = 10) -> Index Scan (A,B,C)
     plan transformDown {
       case l: LeafNode if provider.isSupportedRelation(l) =>
+        import org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider
         val relation = provider.getRelation(l)
 
-        val ds = new DefaultSource15()
-        val opt = Map("es.resource" -> index.name)
-        val indexFsRelation = ds.createRelation(spark.sqlContext, opt)
+        val jdbc = new JdbcRelationProvider()
+        val indexFsRelation = jdbc.createRelation(
+          spark.sqlContext,
+          Map[String, String](
+            "url" -> "jdbc:opensearch://localhost:9200",
+            "dbtable" -> index.name))
+
+        // disable elasticsearch relation.
+        // val ds = new DefaultSource15()
+        // val opt = Map("es.resource" -> index.name)
+        // val indexFsRelation = ds.createRelation(spark.sqlContext, opt)
 
         val updatedOutput = relation.output
           .filter(attr => indexFsRelation.schema.fieldNames.contains(attr.name))
@@ -157,6 +166,7 @@ object CoveringIndexRuleUtils {
       // can be transformed to 'Project -> Filter -> LogicalRelation'. Thus, with transformDown,
       // it will be matched again and transformed recursively which causes stack overflow exception.
       case l: LeafNode if provider.isSupportedRelation(l) =>
+        import org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider
         val relation = provider.getRelation(l)
         val (filesDeleted, filesAppended) =
           if (!HyperspaceConf.hybridScanEnabled(spark) && index.hasSourceUpdate) {
@@ -209,9 +219,16 @@ object CoveringIndexRuleUtils {
           index.withCachedTag(plan, IndexLogEntryTags.INMEMORYFILEINDEX_HYBRID_SCAN)(fileIndex)
         }
 
-        val ds = new DefaultSource15()
-        val opt = Map("es.resource" -> index.name)
-        val indexFsRelation = ds.createRelation(spark.sqlContext, opt)
+        val jdbc = new JdbcRelationProvider()
+        val indexFsRelation = jdbc.createRelation(
+          spark.sqlContext,
+          Map[String, String](
+            "url" -> "jdbc:opensearch://localhost:9200",
+            "dbtable" -> index.name))
+
+//        val ds = new DefaultSource15()
+//        val opt = Map("es.resource" -> index.name)
+//        val indexFsRelation = ds.createRelation(spark.sqlContext, opt)
 
         val updatedOutput = relation.output
           .filter(attr => indexFsRelation.schema.fieldNames.contains(attr.name))

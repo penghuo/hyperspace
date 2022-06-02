@@ -18,7 +18,6 @@ package com.microsoft
 
 import org.apache.spark.sql.SparkSession
 
-import com.microsoft.hyperspace.HyperspaceSparkSessionExtension
 import com.microsoft.hyperspace.index.execution.BucketUnionStrategy
 import com.microsoft.hyperspace.index.rules.ApplyHyperspace
 import com.microsoft.hyperspace.util.HyperspaceConf
@@ -80,6 +79,9 @@ package object hyperspace {
      * @param sparkSession Spark session that will use Hyperspace
      */
     private[hyperspace] def addOptimizationsIfNeeded(): Unit = {
+      import org.apache.spark.sql.jdbc.JdbcDialects
+
+      import com.microsoft.hyperspace.thunder.OpenSearchDialect
       if (!sparkSession.sessionState.experimentalMethods.extraOptimizations.contains(
           ApplyHyperspace)) {
         sparkSession.sessionState.experimentalMethods.extraOptimizations ++=
@@ -90,6 +92,8 @@ package object hyperspace {
         sparkSession.sessionState.experimentalMethods.extraStrategies ++=
           BucketUnionStrategy :: Nil
       }
+
+      JdbcDialects.registerDialect(OpenSearchDialect)
     }
   }
 }
