@@ -19,6 +19,12 @@ package com.microsoft.hyperspace.index
 import org.apache.spark.sql.internal.SQLConf
 
 object IndexConstants {
+  val OPENSEARCH_HOST = "spark.opensearch.host"
+  val OPENSEARCH_HOST_DEFAULT = "localhost"
+
+  val OPENSEARCH_PUSHDOWN_AGGREGATION = "spark.opensearch.pushdown.aggregation"
+  val OPENSEARCH_PUSHDOWN_AGGREGATION_DEFAULT = "false"
+
   // If it is set as false, Hyperspace will not be applied.
   val HYPERSPACE_APPLY_ENABLED = "spark.hyperspace.apply.enabled"
   val HYPERSPACE_APPLY_ENABLED_DEFAULT = "true"
@@ -70,7 +76,8 @@ object IndexConstants {
   val INDEX_ZORDER_QUANTILE_ENABLED_DEFAULT = "false"
 
   // relativeError value when collecting approximate quantiles for numeric columns.
-  val INDEX_ZORDER_QUANTILE_RELATIVE_ERROR = "spark.hyperspace.index.zorder.quantile.relativeError"
+  val INDEX_ZORDER_QUANTILE_RELATIVE_ERROR =
+    "spark.hyperspace.index.zorder.quantile.relativeError"
   val INDEX_ZORDER_QUANTILE_RELATIVE_ERROR_DEFAULT = "0.01"
 
   // TODO: Remove dev config when nested column is fully supported.

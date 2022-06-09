@@ -25,6 +25,18 @@ import com.microsoft.hyperspace.index.IndexConstants
  * Helper class to extract Hyperspace-related configs from SparkSession.
  */
 object HyperspaceConf {
+  def opensearchHost(spark: SparkSession): String = {
+    spark.conf
+      .get(IndexConstants.OPENSEARCH_HOST, IndexConstants.OPENSEARCH_HOST_DEFAULT)
+  }
+
+  def opensearchPushDownAggregation(spark: SparkSession): Boolean = {
+    spark.conf
+      .get(
+        IndexConstants.OPENSEARCH_PUSHDOWN_AGGREGATION,
+        IndexConstants.OPENSEARCH_PUSHDOWN_AGGREGATION_DEFAULT)
+      .toBoolean
+  }
 
   /**
    * Returns the config value whether hyperspace is enabled or not.

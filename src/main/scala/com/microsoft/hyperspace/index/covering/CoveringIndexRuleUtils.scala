@@ -29,7 +29,6 @@ import org.apache.spark.sql.catalyst.plans.logical._
 import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.types.LongType
 import org.apache.spark.sql.types.StructType
-import org.elasticsearch.spark.sql.DefaultSource15
 
 import com.microsoft.hyperspace.Hyperspace
 import com.microsoft.hyperspace.index._
@@ -121,7 +120,8 @@ object CoveringIndexRuleUtils {
         val indexFsRelation = jdbc.createRelation(
           spark.sqlContext,
           Map[String, String](
-            "url" -> "jdbc:opensearch://localhost:9200",
+            "url" -> s"""jdbc:opensearch://${HyperspaceConf.opensearchHost(spark)}:9200""",
+            "pushDownAggregate" -> s"""${HyperspaceConf.opensearchPushDownAggregation(spark)}""",
             "dbtable" -> index.name))
 
         // disable elasticsearch relation.
@@ -223,7 +223,8 @@ object CoveringIndexRuleUtils {
         val indexFsRelation = jdbc.createRelation(
           spark.sqlContext,
           Map[String, String](
-            "url" -> "jdbc:opensearch://localhost:9200",
+            "url" -> s"""jdbc:opensearch://${HyperspaceConf.opensearchHost(spark)}:9200""",
+            "pushDownAggregate" -> s"""${HyperspaceConf.opensearchPushDownAggregation(spark)}""",
             "dbtable" -> index.name))
 
 //        val ds = new DefaultSource15()
